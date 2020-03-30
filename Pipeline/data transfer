@@ -1,3 +1,41 @@
+Memref dataflow optimization (-memref-dataflow-opt)
+This pass performs store to load forwarding for memref’s to eliminate memory accesses and potentially the entire memref if all its accesses are forwarded.
+
+Input
+
+func @store_load_affine_apply() -> memref<10x10xf32> {
+  %cf7 = constant 7.0 : f32
+  %m = alloc() : memref<10x10xf32>
+  affine.for %i0 = 0 to 10 {
+    affine.for %i1 = 0 to 10 {
+      affine.store %cf7, %m[%i0, %i1] : memref<10x10xf32>
+      %v0 = affine.load %m[%i0, %i1] : memref<10x10xf32>
+      %v1 = addf %v0, %v0 : f32
+    }
+  }
+  return %m : memref<10x10xf32>
+}
+Output
+
+module {
+  func @store_load_affine_apply() -> memref<10x10xf32> {
+    %cst = constant 7.000000e+00 : f32
+    %0 = alloc() : memref<10x10xf32>
+    affine.for %arg0 = 0 to 10 {
+      affine.for %arg1 = 0 to 10 {
+        affine.store %cst, %0[%arg0, %arg1] : memref<10x10xf32>
+        %1 = addf %cst, %cst : f32
+      }
+    }
+    return %0 : memref<10x10xf32>
+  }
+}
+
+Memref dependence analysis (-memref-dependence-check)
+This pass performs dependence analysis to determine dependences between pairs of memory operations (load’s and store’s) on memref’s. Dependence analysis exploits polyhedral information available (affine maps, expressions, and affine.apply operations) to precisely represent dependences using affine constraints, while also computing dependence vectors from them, where each component of the dependence vector provides a lower and an upper bound on the dependence distance along the corresponding dimension.
+
+test/Transforms/memref-dataflow-opt.mlir:232:7: note: dependence from 2 to 1 at depth 1 = ([1, 1], [-inf, +inf])
+      store %cf9, %m[%idx] : memref<10xf32>
 <h2>Pipeline data transfer (-affine-pipeline-data-transfer)</h2>
 This pass performs a transformation to overlap non-blocking DMA operations in a loop with computations through double buffering. This is achieved by advancing dma_start operations with respect to other operations.
 
