@@ -4,7 +4,7 @@ it supports the following dialects:
 Affine ,LLVM IR Dialect.
 
 
-1.Nested Regions
+<h2>Nested Regions</h2>
 
 %2 = xla.fusion (%0 : tensor<f32>, %1 : tensor<f32>) : tensor<f32> {
  ^bb0(%a0 : tensor<f32>, %a1 : tensor<f32>):
@@ -12,8 +12,10 @@ Affine ,LLVM IR Dialect.
  %x1 = xla.relu %x0 : tensor<f32>
  return %x1
  }
-Context: Traditional Polyhedral Form
+ 
+<h2>Context: Traditional Polyhedral Form</h2>
 We started by discussing a representation that uses the traditional polyhedral schedule set + domain representation, e.g. consider C-like code like:
+
 
   void simple_example(...) {
     for (int i = 0; i < N; ++i) {
@@ -24,7 +26,7 @@ We started by discussing a representation that uses the traditional polyhedral s
        }
     }
   }
-  Proposal: Simplified Polyhedral Form
+  <h2>Proposal: Simplified Polyhedral Form</h2>
 mlfunc @simple_example(... %N) {
     affine.for %i = 0 ... %N step 1 {
       affine.for %j = 0 ... %N step 1 {
@@ -40,7 +42,7 @@ mlfunc @simple_example(... %N) {
     }
   }
 
-The example with the reduced domain would be represented with an if instruction:
+<h2>The example with the reduced domain would be represented with an if instruction:</h2>
 
   mlfunc @reduced_domain_example(... %N) {
     affine.for %i = 0 ... %N step 1 {
@@ -59,3 +61,5 @@ The example with the reduced domain would be represented with an if instruction:
       }
     }
   }
+  <h2>Evaluation</h2>
+Both of these forms are capable of expressing the same class of computation: multidimensional loop nests with affine loop bounds and affine memory references
